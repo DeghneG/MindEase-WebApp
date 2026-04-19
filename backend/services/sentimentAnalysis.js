@@ -1,10 +1,14 @@
 // Logic for determining stress levels
 
 const analyze = async (message) => {
-  // TODO: Integrate with a sentiment analysis API
-  // This is a placeholder implementation using keyword matching
-
   const lowerMessage = message.toLowerCase();
+
+  let intent = 'general';
+  if (lowerMessage.includes('exam') || lowerMessage.includes('test') || lowerMessage.includes('quiz') || lowerMessage.includes('grade')) intent = 'exams';
+  else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate')) intent = 'gratitude';
+  else if (lowerMessage.includes('tired') || lowerMessage.includes('sleep') || lowerMessage.includes('exhaustid') || lowerMessage.includes('exhausted')) intent = 'exhaustion';
+  else if (lowerMessage.includes('okay') || lowerMessage.includes('fine') || lowerMessage.includes('good') || lowerMessage.includes('better')) intent = 'okay';
+  else if (lowerMessage.includes('breath') || lowerMessage.includes('exercise')) intent = 'coping';
 
   const highStressKeywords = [
     'hopeless', 'cant take it', "can't take it", 'give up', 'overwhelmed',
@@ -15,7 +19,8 @@ const analyze = async (message) => {
   const moderateStressKeywords = [
     'stressed', 'anxious', 'worried', 'nervous', 'pressure',
     'deadline', 'struggling', 'difficult', 'hard', 'tough',
-    'confused', 'frustrated', 'tired', 'cant sleep', "can't sleep"
+    'confused', 'frustrated', 'tired', 'cant sleep', "can't sleep",
+    'exam', 'test'
   ];
 
   let stressLevel = 'low';
@@ -42,6 +47,7 @@ const analyze = async (message) => {
   return {
     stressLevel,
     score,
+    intent,
     message,
   };
 };
