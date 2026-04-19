@@ -10,6 +10,7 @@ function Coping() {
   const [newTask, setNewTask] = useState('');
   const [noteIndex, setNoteIndex] = useState(0);
   const [breathPhase, setBreathPhase] = useState('Ready');
+  const [walkStatus, setWalkStatus] = useState(null);
 
   const notes = [
     "You are doing the best you can right now, and that is enough.",
@@ -36,6 +37,16 @@ function Coping() {
 
   const toggleTask = (id) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  };
+
+  const handleWalkComplete = () => {
+    const messages = [
+      "Amazing job! Sometimes a simple change of scenery is all it takes to reset.",
+      "Walk logged. Did you notice how the fresh air felt? That's mindfulness in action.",
+      "Great! Every step is a literal step away from the pressure. You've got this.",
+      "Fantastic. Even just 5 minutes is enough to completely change your perspective."
+    ];
+    setWalkStatus(messages[Math.floor(Math.random() * messages.length)]);
   };
 
   // Breathing logic simulation
@@ -99,8 +110,19 @@ function Coping() {
         return (
           <div className="widget-view">
              <h2>5-Minute Walk Check-in</h2>
-             <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Leave your phone if safely possible. Pay attention to 5 things you can see, 4 you can touch, 3 you can hear on your walk.</p>
-             <button className="start-btn" style={{ display: 'inline-flex' }} onClick={() => alert("Walk logged! Great job taking a break.")}>Log Walk Complete</button>
+             {walkStatus ? (
+               <>
+                 <div style={{ margin: '2rem 0', padding: '1.5rem', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderRadius: '1rem', borderLeft: '4px solid var(--accent-color)' }}>
+                   <p style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{walkStatus}</p>
+                 </div>
+                 <button className="option-btn" onClick={() => setWalkStatus(null)}>Start Another Walk Check-in</button>
+               </>
+             ) : (
+               <>
+                 <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Leave your phone if safely possible. Pay attention to 5 things you can see, 4 you can touch, 3 you can hear on your walk.</p>
+                 <button className="start-btn" style={{ display: 'inline-flex' }} onClick={handleWalkComplete}>Log Walk Complete</button>
+               </>
+             )}
           </div>
         );
       case 'encouragement':
