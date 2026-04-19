@@ -3,86 +3,78 @@ const aiConfig = require('../config/ai-config');
 
 const generateResponse = async (message, sentiment) => {
   const { stressLevel, intent } = sentiment;
+  const apiKey = aiConfig.apiKey;
   
   // Try using Gemini AI if API Key is valid
-  if (aiConfig.apiKey && aiConfig.apiKey !== 'your_api_key_here') {
+  if (apiKey && apiKey !== 'your_api_key_here') {
     try {
-      const genAI = new GoogleGenerativeAI(aiConfig.apiKey);
+      const genAI = new GoogleGenerativeAI(apiKey);
+      // Explicitly using a slightly older but stable model name string just in case
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const prompt = `You are MindEase, a deeply empathetic and human-sounding emotional support AI for college students.
+      const prompt = `You are MindEase, a deeply empathetic human-sounding student wellness assistant.
 The student just said: "${message}"
-Detected Stress: ${stressLevel}
-Detected Intent: ${intent}
+Intent: ${intent}
+Stress: ${stressLevel}
 
-Your goal is to provide a uniquely supportive, non-repetitive response. 
-- If they are sad or lonely, be very gentle and offer to listen more.
-- If they mention exams, ask specifically which subject or how they are feeling about it.
-- Always include 2-3 dynamic button options that lead to more conversation or coping strategies.
+Respond like a helpful human. If they want a joke, tell a funny one. If they are sad, listen. 
+Answer specifically to what they said.
 
-CRITICAL: Return ONLY a valid JSON object. No markdown. No conversational filler around the JSON.
+Return JSON ONLY:
 {
-  "reply": "Your human-sounding empathetic response",
-  "options": ["First button text", "Second button text"]
+  "reply": "Your conversational answer string",
+  "options": ["Suggestion 1", "Suggestion 2"]
 }`;
 
       const result = await model.generateContent(prompt);
-      let text = result.response.text();
+      const responseText = await result.response.text();
       
-      // Robust JSON extraction using Regex to find the first '{' and last '}'
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0].trim());
+      // Better JSON cleaning
+      const start = responseText.indexOf('{');
+      const end = responseText.lastIndexOf('}');
+      if (start !== -1 && end !== -1) {
+        const jsonStr = responseText.substring(start, end + 1);
+        const parsed = JSON.parse(jsonStr);
         if (parsed && parsed.reply) {
           return { reply: parsed.reply, options: parsed.options || [] };
         }
       }
     } catch (e) {
-      console.error("Gemini API Error:", e);
-      // Fallback below
+      console.error("AI Error:", e.message);
     }
   }
 
-  // --- RELEVANT HUMAN FALLBACK LOGIC --- //
+  // --- LAST RESORT FALLBACKS (If AI is down) --- //
   let supportResponse = '';
   let options = [];
 
+  const jokeList = [
+    "Why don't scientists trust atoms? Because they make up everything! 😂",
+    "What do you call a fake noodle? An impasta! 🍝",
+    "Why did the student eat his homework? Because the teacher told him it was a piece of cake! 🍰",
+    "I told my doctor I broke my arm in two places. He told me to stop going to those places. 🩺"
+  ];
+
   switch (intent) {
-    case 'sadness':
-      supportResponse = "I'm so sorry to hear you're feeling this way. It's completely valid to feel sad right now. Just know that I'm here to listen. Would you like to tell me more about what's making you feel this way?";
-      options = ["I just feel low", "Everything feels heavy", "Can we try a breathing exercise?"];
+    case 'joke':
+      supportResponse = jokeList[Math.floor(Math.random() * jokeList.length)];
+      options = ["Tell me another!", "That was silly", "Let's talk about exams"];
       break;
-    case 'lonely':
-      supportResponse = "Feeling lonely can be really tough, especially in a busy environment. Please know that you're not alone in feeling this way. Is there someone you've thought about reaching out to, or would you like to just chat here?";
-      options = ["I feel disconnected", "It's hard to make friends", "Let's keep chatting"];
+    case 'sadness':
+      supportResponse = "I'm so sorry to hear you're feeling down. I'm here to listen. Can you tell me what's specifically on your mind?";
+      options = ["I just feel low", "I'm lonely", "Try a breathing exercise"];
       break;
     case 'exams':
-      supportResponse = "Exams can be such a huge source of pressure. Remember that your worth isn't tied to a score. How is the studying going? Is there a specific subject that's causing the most stress?";
-      options = ["It's my major subject", "I feel behind", "Help me stay focused"];
-      break;
-    case 'gratitude':
-      supportResponse = "You are so welcome! I'm really glad I could be here for you. Is there anything else you'd like to dive into today?";
-      options = ["Let's talk more", "I'm good for now, thanks"];
+      supportResponse = "Exams are tough! What subject is giving you the most trouble? I can help you break it down into small tasks.";
+      options = ["I'm behind on studying", "I can't focus", "Help me organize"];
       break;
     case 'exhaustion':
-      supportResponse = "It sounds like you're running on empty. Pushing through exhaustion is really hard. Can you find just 15 minutes to close your eyes or step away from your screens?";
-      options = ["I'll try that", "I can't stop yet", "I'm just so drained"];
-      break;
-    case 'okay':
-      supportResponse = "I'm really heartened to hear you're doing okay. It shows a lot of resilience. Keep taking those small steps for yourself!";
-      options = ["Thanks!", "What else can I do?", "Tell me a joke"];
+      supportResponse = "It sounds like you need some serious rest. Have you been able to sleep at all lately?";
+      options = ["Not really", "I'm just drained", "Let's try 5 min walk"];
       break;
     default:
-      if (stressLevel === 'high') {
-        supportResponse = "I can tell you're carrying a lot right now. Please remember it's okay to reach out for professional help too. I'm here to support you in the meantime.";
-        options = ["Show me crisis resources", "Just someone to talk to", "Help me ground myself"];
-      } else if (stressLevel === 'moderate') {
-        supportResponse = "It sounds like you're dealing with some heavy pressure. Let's take it one step at a time. Do you want to try a quick grounding activity?";
-        options = ["Yes, guide me", "Maybe later", "Help me organize my day"];
-      } else {
-        supportResponse = "I'm here for you! No matter what's on your mind, we can talk through it. How has the rest of your day been?";
-        options = ["It's been okay", "A bit stressful", "I have a lot on my mind"];
-      }
+      supportResponse = "I hear you. I'm here to support you through whatever you're feeling. How can I help make things a bit easier for you right now?";
+      options = ["I have exams", "I feel sad", "Tell me a joke"];
   }
 
   return { reply: supportResponse, options };

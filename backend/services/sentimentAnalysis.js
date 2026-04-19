@@ -20,6 +20,8 @@ const analyze = async (message) => {
     intent = 'okay';
   } else if (lowerMessage.includes('breath') || lowerMessage.includes('exercise')) {
     intent = 'coping';
+  } else if (lowerMessage.includes('joke') || lowerMessage.includes('funny') || lowerMessage.includes('laugh')) {
+    intent = 'joke';
   }
 
   // Stress Level Detection
