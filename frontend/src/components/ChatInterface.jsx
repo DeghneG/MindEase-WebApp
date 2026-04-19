@@ -8,6 +8,7 @@ function ChatInterface() {
     {
       text: "I can tell you're feeling a bit overwhelmed today. Would you like to talk about what's on your mind?",
       sender: 'bot',
+      options: ["Yes, let's talk about exams", "I just need a breathing exercise"]
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,8 +29,15 @@ function ChatInterface() {
 
     try {
       const response = await sendMessage(text);
-      const botMessage = { text: response.reply, sender: 'bot' };
-      setMessages((prev) => [...prev, botMessage]);
+      const botMessage = { text: response.reply, sender: 'bot', options: response.options };
+      setMessages((prev) => {
+        // remove options from previous message if any
+        const newMessages = [...prev];
+        if (newMessages.length > 0) {
+           newMessages[newMessages.length - 1] = { ...newMessages[newMessages.length - 1], options: null };
+        }
+        return [...newMessages, botMessage];
+      });
     } catch (error) {
       const errorMessage = {
         text: 'Sorry, something went wrong. Please try again.',
@@ -49,10 +57,13 @@ function ChatInterface() {
         {messages.map((msg, index) => (
           <React.Fragment key={index}>
             <MessageBubble message={msg.text} sender={msg.sender} />
-            {msg.sender === 'bot' && index === 0 && (
+            {msg.sender === 'bot' && msg.options && msg.options.length > 0 && index === messages.length - 1 && !isLoading && (
               <div className="chat-options">
-                 <button className="option-btn">Yes, let's talk about exams</button>
-                 <button className="option-btn">I just need a breathing exercise</button>
+                {msg.options.map((opt, i) => (
+                   <button key={i} className="option-btn" onClick={() => handleSend(opt)}>
+                     {opt}
+                   </button>
+                ))}
               </div>
             )}
           </React.Fragment>

@@ -14,10 +14,11 @@ const handleMessage = async (req, res) => {
     const sentiment = await sentimentAnalysis.analyze(message);
 
     // Generate AI response based on message and sentiment
-    const response = await nlpService.generateResponse(message, sentiment);
+    const { reply, options } = await nlpService.generateResponse(message, sentiment);
 
     res.json({
-      reply: response,
+      reply,
+      options,
       sentiment: sentiment,
     });
   } catch (error) {
