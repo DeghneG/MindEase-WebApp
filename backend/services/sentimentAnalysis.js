@@ -8,6 +8,8 @@ const analyze = async (message) => {
   // Topic Detection (Intents)
   if (lowerMessage.includes('exam') || lowerMessage.includes('test') || lowerMessage.includes('quiz') || lowerMessage.includes('grade')) {
     intent = 'exams';
+  } else if (lowerMessage.includes('organize') || lowerMessage.includes('task') || lowerMessage.includes('schedule') || lowerMessage.includes('plan') || lowerMessage.includes('to-do')) {
+    intent = 'productivity';
   } else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate')) {
     intent = 'gratitude';
   } else if (lowerMessage.includes('tired') || lowerMessage.includes('sleep') || lowerMessage.includes('exhausted') || lowerMessage.includes('sleepy')) {
@@ -35,7 +37,7 @@ const analyze = async (message) => {
     'stressed', 'anxious', 'worried', 'nervous', 'pressure',
     'deadline', 'struggling', 'difficult', 'hard', 'tough',
     'confused', 'frustrated', 'tired', 'cant sleep', "can't sleep",
-    'exam', 'test', 'sad', 'lonely'
+    'exam', 'test', 'sad', 'lonely', 'overwhelmed'
   ];
 
   let stressLevel = 'low';
