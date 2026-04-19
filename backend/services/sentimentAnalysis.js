@@ -1,26 +1,39 @@
-// Logic for determining stress levels
+// Logic for determining stress levels and user intent
 
 const analyze = async (message) => {
   const lowerMessage = message.toLowerCase();
 
   let intent = 'general';
-  if (lowerMessage.includes('exam') || lowerMessage.includes('test') || lowerMessage.includes('quiz') || lowerMessage.includes('grade')) intent = 'exams';
-  else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate')) intent = 'gratitude';
-  else if (lowerMessage.includes('tired') || lowerMessage.includes('sleep') || lowerMessage.includes('exhaustid') || lowerMessage.includes('exhausted')) intent = 'exhaustion';
-  else if (lowerMessage.includes('okay') || lowerMessage.includes('fine') || lowerMessage.includes('good') || lowerMessage.includes('better')) intent = 'okay';
-  else if (lowerMessage.includes('breath') || lowerMessage.includes('exercise')) intent = 'coping';
+  
+  // Topic Detection (Intents)
+  if (lowerMessage.includes('exam') || lowerMessage.includes('test') || lowerMessage.includes('quiz') || lowerMessage.includes('grade')) {
+    intent = 'exams';
+  } else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate')) {
+    intent = 'gratitude';
+  } else if (lowerMessage.includes('tired') || lowerMessage.includes('sleep') || lowerMessage.includes('exhausted') || lowerMessage.includes('sleepy')) {
+    intent = 'exhaustion';
+  } else if (lowerMessage.includes('sad') || lowerMessage.includes('unhappy') || lowerMessage.includes('cry') || lowerMessage.includes('depressed') || lowerMessage.includes('miserable')) {
+    intent = 'sadness';
+  } else if (lowerMessage.includes('lonely') || lowerMessage.includes('alone') || lowerMessage.includes('nobody')) {
+    intent = 'lonely';
+  } else if (lowerMessage.includes('okay') || lowerMessage.includes('fine') || lowerMessage.includes('good') || lowerMessage.includes('better')) {
+    intent = 'okay';
+  } else if (lowerMessage.includes('breath') || lowerMessage.includes('exercise')) {
+    intent = 'coping';
+  }
 
+  // Stress Level Detection
   const highStressKeywords = [
     'hopeless', 'cant take it', "can't take it", 'give up', 'overwhelmed',
     'panic', 'crisis', 'breaking down', 'crying', 'desperate', 'failing',
-    'worthless', 'helpless', 'exhausted', 'burned out', 'burnout'
+    'worthless', 'helpless', 'exhausted', 'burned out', 'burnout', 'suicide', 'die'
   ];
 
   const moderateStressKeywords = [
     'stressed', 'anxious', 'worried', 'nervous', 'pressure',
     'deadline', 'struggling', 'difficult', 'hard', 'tough',
     'confused', 'frustrated', 'tired', 'cant sleep', "can't sleep",
-    'exam', 'test'
+    'exam', 'test', 'sad', 'lonely'
   ];
 
   let stressLevel = 'low';
