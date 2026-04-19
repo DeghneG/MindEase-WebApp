@@ -1,12 +1,17 @@
 import React from 'react';
-import ChatInterface from '../components/ChatInterface';
+import { Link } from 'react-router-dom';
+import { MessageSquare } from 'lucide-react';
 
 function Home() {
   return (
-    <div className="home">
-      <h1>MindEase</h1>
-      <p>Your AI-powered emotional support companion</p>
-      <ChatInterface />
+    <div className="home-container">
+      <h1>Welcome, Loublex Esmero.</h1>
+      <p>I'm here to listen.</p>
+      
+      <Link to="/chat" className="start-btn">
+        Start a conversation
+        <MessageSquare size={18} />
+      </Link>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-// Text input and send button
 import React, { useState } from 'react';
+import { Send, Plus } from 'lucide-react';
 
 function InputArea({ onSend, isLoading }) {
   const [input, setInput] = useState('');
@@ -13,16 +13,20 @@ function InputArea({ onSend, isLoading }) {
   };
 
   return (
-    <form className="input-area" onSubmit={handleSubmit}>
+    <form className="input-container" onSubmit={handleSubmit}>
+      <button type="button" className="send-btn">
+        <Plus size={20} />
+      </button>
       <input
+        className="chat-input"
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Type your message..."
         disabled={isLoading}
       />
-      <button type="submit" disabled={isLoading || !input.trim()}>
-        Send
+      <button type="submit" className="send-btn" disabled={isLoading || !input.trim()}>
+        <Send size={20} />
       </button>
     </form>
   );

@@ -1,4 +1,3 @@
-// Main chat window
 import React, { useState, useRef, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
 import InputArea from './InputArea';
@@ -7,7 +6,7 @@ import { sendMessage } from '../services/api';
 function ChatInterface() {
   const [messages, setMessages] = useState([
     {
-      text: "Hi there! I'm MindEase, your emotional support companion. How are you feeling today?",
+      text: "I can tell you're feeling a bit overwhelmed today. Would you like to talk about what's on your mind?",
       sender: 'bot',
     },
   ]);
@@ -43,12 +42,22 @@ function ChatInterface() {
   };
 
   return (
-    <div className="chat-interface">
-      <div className="messages-container">
+    <div className="chat-container">
+      <div className="messages-area">
+        <div className="timestamp">Today, 10:42 AM</div>
+        
         {messages.map((msg, index) => (
-          <MessageBubble key={index} message={msg.text} sender={msg.sender} />
+          <React.Fragment key={index}>
+            <MessageBubble message={msg.text} sender={msg.sender} />
+            {msg.sender === 'bot' && index === 0 && (
+              <div className="chat-options">
+                 <button className="option-btn">Yes, let's talk about exams</button>
+                 <button className="option-btn">I just need a breathing exercise</button>
+              </div>
+            )}
+          </React.Fragment>
         ))}
-        {isLoading && <MessageBubble message="Thinking..." sender="bot" />}
+        {isLoading && <MessageBubble message="..." sender="bot" />}
         <div ref={messagesEndRef} />
       </div>
       <InputArea onSend={handleSend} isLoading={isLoading} />
