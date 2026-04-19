@@ -1,7 +1,7 @@
 // Configuration for AI APIs
 
 const aiConfig = {
-  apiKey: process.env.AI_API_KEY || 'AIzaSyB3rY55qAWSQlHpEHEhrUpaIJEGJJ2aLTQ',
+  apiKey: process.env.AI_API_KEY || 'AIzaSyCvn58O4xfYA2OCctNMOxsTkwptUPElQ2c',
   apiUrl: process.env.AI_API_URL,
   model: 'default',
   maxTokens: 500,
