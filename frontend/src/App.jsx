@@ -16,6 +16,8 @@ function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/coping" element={<Coping />} />
           <Route path="/resources" element={<Resources />} />
+          {/* Catch-all for unknown routes */}
+          <Route path="*" element={<Home />} />
         </Routes>
       </div>
     </Router>
