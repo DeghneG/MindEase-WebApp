@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
     }
 
     // Sanitize history to match Gemini's expected format
-    const cleanHistory = Array.isArray(history)
+    let cleanHistory = Array.isArray(history)
       ? history
           .filter(h => h && h.role && Array.isArray(h.parts))
           .map(h => ({
@@ -84,6 +84,12 @@ router.post('/', async (req, res) => {
             parts: h.parts,
           }))
       : [];
+
+    // CRITICAL: Gemini history MUST start with a 'user' message.
+    // If the history starts with the AI's greeting (model), we must remove it.
+    if (cleanHistory.length > 0 && cleanHistory[0].role === 'model') {
+      cleanHistory.shift();
+    }
 
     const instance = getGenAI();
     
