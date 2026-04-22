@@ -1,6 +1,6 @@
 // Axios/Fetch calls to backend
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Uses a relative path so it works both locally (via proxy) and on Vercel (via rewrites)
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const sendMessage = async (message, history = []) => {
   const response = await fetch(`${API_URL}/chat`, {
