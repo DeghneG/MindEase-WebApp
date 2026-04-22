@@ -5,6 +5,7 @@ import { MessageSquare } from 'lucide-react';
 function Home() {
   return (
     <div className="home-container">
+      <div className="hero-branding">MindEase</div>
       <h1>Welcome, Loublex Esmero.</h1>
       <p>I'm here to listen.</p>
       
