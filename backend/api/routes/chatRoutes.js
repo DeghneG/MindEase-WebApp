@@ -2,7 +2,18 @@ const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const router = express.Router();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Initialize genAI lazily to ensure environment variables are loaded
+let genAI;
+const getGenAI = () => {
+  if (!genAI) {
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("FATAL ERROR: GEMINI_API_KEY is not defined in environment.");
+    }
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return genAI;
+};
 
 const SYSTEM_PROMPT = `You are MindEase, a warm and empathetic mental wellness companion for Filipino students. 
 
@@ -68,16 +79,17 @@ router.post('/', async (req, res) => {
       ? history
           .filter(h => h && h.role && Array.isArray(h.parts))
           .map(h => ({
-            role: h.role === 'bot' ? 'model' : (h.role === 'user' ? 'user' : h.role),
+            role: h.role === 'bot' ? 'model' : (h.role === 'model' ? 'model' : (h.role === 'user' ? 'user' : h.role)),
             parts: h.parts,
           }))
       : [];
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+    const instance = getGenAI();
+    const model = instance.getGenerativeModel({
+      model: 'gemini-2.5-flash', // Switching to 2.5-flash to bypass the quota exhausted on 2.0-flash
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
-        temperature: 0.9,        // Higher = more creative/varied
+        temperature: 0.9,
         topP: 0.95,
         topK: 40,
         maxOutputTokens: 600,
@@ -98,7 +110,6 @@ router.post('/', async (req, res) => {
     // Parse Gemini's JSON response
     let parsed;
     try {
-      // Strip markdown code fences if Gemini accidentally added them
       const cleaned = rawText.replace(/```json\s*|\s*```/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch (parseError) {
@@ -110,7 +121,6 @@ router.post('/', async (req, res) => {
       };
     }
 
-    // Ensure response shape is always valid
     const finalResponse = {
       reply: parsed.reply || "I'm here. What's on your mind?",
       options: Array.isArray(parsed.options) && parsed.options.length > 0
@@ -122,9 +132,7 @@ router.post('/', async (req, res) => {
     res.json(finalResponse);
   } catch (error) {
     console.error('Chat route error:', error.message);
-
-    // Graceful fallback so the UI never breaks
-    res.status(500).json({
+    res.status(200).json({ // Return 200 so the frontend renders this graceful fallback instead of crashing
       reply: "Sorry, nag-lag ako for a sec. Pwede mo ba ulitin?",
       options: ['Try again', 'Start over', 'Tell me a joke'],
       action: null,
