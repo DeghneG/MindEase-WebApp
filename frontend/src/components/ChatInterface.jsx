@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
 import InputArea from './InputArea';
+import BreathingGuide from './BreathingGuide';
 import { sendMessage } from '../services/api';
 
 function ChatInterface() {
@@ -12,6 +13,13 @@ function ChatInterface() {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showBreathingGuide, setShowBreathingGuide] = useState(false);
+  const [chatHistory, setChatHistory] = useState([
+    {
+      role: 'model',
+      parts: [{ text: "I can tell you're feeling a bit overwhelmed today. Would you like to talk about what's on your mind?" }]
+    }
+  ]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -27,8 +35,15 @@ function ChatInterface() {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
+    const currentHistory = [...chatHistory];
+
     try {
-      const response = await sendMessage(text);
+      const response = await sendMessage(text, currentHistory);
+      
+      if (response.action === 'show_breathing') {
+        setShowBreathingGuide(true);
+      }
+
       const botMessage = { text: response.reply, sender: 'bot', options: response.options };
       setMessages((prev) => {
         // remove options from previous message if any
@@ -38,6 +53,13 @@ function ChatInterface() {
         }
         return [...newMessages, botMessage];
       });
+
+      // Update persistent chat history for context
+      setChatHistory([
+        ...currentHistory,
+        { role: 'user', parts: [{ text }] },
+        { role: 'model', parts: [{ text: response.reply }] }
+      ]);
     } catch (error) {
       const errorMessage = {
         text: 'Sorry, something went wrong. Please try again.',
@@ -72,6 +94,7 @@ function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
       <InputArea onSend={handleSend} isLoading={isLoading} />
+      {showBreathingGuide && <BreathingGuide onClose={() => setShowBreathingGuide(false)} />}
     </div>
   );
 }

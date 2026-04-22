@@ -525,6 +525,21 @@ body {
   border: 1px solid var(--border-color);
 }
 
+.breathing-guide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 10, 11, 0.9);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
 .breath-circle {
   width: 15rem;
   height: 15rem;

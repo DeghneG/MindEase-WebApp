@@ -1,7 +1,13 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const aiConfig = require('../config/ai-config');
 
-const generateResponse = async (message, sentiment) => {
+/**
+ * Generates an AI response using Gemini or fallback logic.
+ * @param {string} message - The current user message
+ * @param {object} sentiment - Parsed sentiment and intent
+ * @param {array} history - Previous chat history for context
+ */
+const generateResponse = async (message, sentiment, history = []) => {
   const { stressLevel, intent } = sentiment;
   const apiKey = aiConfig.apiKey;
   
@@ -9,36 +15,48 @@ const generateResponse = async (message, sentiment) => {
   if (apiKey && apiKey !== 'your_api_key_here') {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      const systemInstruction = `You are MindEase, a versatile, deeply empathetic human-sounding student wellness assistant.
+Your goal is to be a supportive companion and a helpful resource for students.
 
-      const prompt = `You are MindEase, a deeply empathetic human-sounding student wellness assistant.
-The student just said: "${message}"
-Intent: ${intent}
-Stress: ${stressLevel}
+CORE CAPABILITIES:
+1. SUPPORT: Provide emotional support and wellness advice.
+2. VERSATILITY: Answer ANY question accurately, whether it's academic (math, science, history), practical (cooking, life skills), or general curiosity. Never refuse to answer a question unless it violates safety guidelines.
+3. PERSONALITY: Maintain a warm, encouraging, and human tone. Use occasional emojis to feel friendly.
 
-YOUR GOAL: Respond like a helpful, unique human. 
-1. Answer specifically to EXACTLY what they said. 
-2. If they mention productivity or organizing, offer specific steps or encouragement.
-3. If they ask for a joke, tell a funny, fresh one.
-4. ALWAYS provide 3 quick-reply options that are laser-focused on the conversation context. NEVER show generic options like "I feel sad" if the user is currently talking about a joke or a specific exam.
-
-Return JSON ONLY:
+RESPONSE FORMAT:
+You MUST respond in valid JSON format:
 {
   "reply": "Your conversational answer string",
-  "options": ["Hyper-contextual choice 1", "Hyper-contextual choice 2", "Hyper-contextual choice 3"]
-}`;
+  "options": ["laser-focused contextual choice 1", "choice 2", "choice 3"],
+  "action": "show_breathing" // OPTIONAL: Only use this if the user needs a breathing guide or is in high distress.
+}
 
-      const result = await model.generateContent(prompt);
+JSON Rules:
+- The 'reply' can be multiple paragraphs if needed, especially for complex answers.
+- 'options' should always lead to helpful next steps or follow-ups based on what was just discussed.
+- Ensure the JSON is properly escaped.`;
+
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction,
+        generationConfig: { responseMimeType: "application/json" }
+      });
+
+      // Start chat with history for context awareness
+      const chat = model.startChat({ history });
+      
+      const prompt = `Student Message: "${message}" (Stress: ${stressLevel}, Intent: ${intent})`;
+      const result = await chat.sendMessage(prompt);
       const responseText = await result.response.text();
       
-      const start = responseText.indexOf('{');
-      const end = responseText.lastIndexOf('}');
-      if (start !== -1 && end !== -1) {
-        const jsonStr = responseText.substring(start, end + 1);
-        const parsed = JSON.parse(jsonStr);
-        if (parsed && parsed.reply) {
-          return { reply: parsed.reply, options: parsed.options || [] };
-        }
+      const parsed = JSON.parse(responseText);
+      if (parsed && parsed.reply) {
+        return { 
+          reply: parsed.reply, 
+          options: parsed.options || [],
+          action: parsed.action || null
+        };
       }
     } catch (e) {
       console.error("AI Error:", e.message);
@@ -48,6 +66,12 @@ Return JSON ONLY:
   // --- LAST RESORT FALLBACKS (If AI is down) --- //
   let supportResponse = '';
   let options = [];
+  let action = null;
+
+  // Detect if the message is specifically asking for breathing
+  if (message.toLowerCase().includes('breathing guide') || message.toLowerCase().includes('breathing session')) {
+    action = 'show_breathing';
+  }
 
   const jokeList = [
     "Why don't scientists trust atoms? Because they make up everything! 😂",
@@ -105,7 +129,7 @@ Return JSON ONLY:
       }
   }
 
-  return { reply: supportResponse, options };
+  return { reply: supportResponse, options, action };
 };
 
 module.exports = { generateResponse };

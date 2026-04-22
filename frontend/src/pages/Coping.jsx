@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wind, ListTodo, Footprints, Heart, ArrowLeft, Plus, CheckCircle2, Circle } from 'lucide-react';
+import BreathingGuide from '../components/BreathingGuide';
 
 function Coping() {
   const [activeCard, setActiveCard] = useState(null);
@@ -9,7 +10,6 @@ function Coping() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [noteIndex, setNoteIndex] = useState(0);
-  const [breathPhase, setBreathPhase] = useState('Ready');
   const [walkStatus, setWalkStatus] = useState(null);
 
   const notes = [
@@ -49,34 +49,12 @@ function Coping() {
     setWalkStatus(messages[Math.floor(Math.random() * messages.length)]);
   };
 
-  // Breathing logic simulation
-  useEffect(() => {
-    if (activeCard !== 'breathing') return;
-    
-    setBreathPhase('Inhale (4s)');
-    let step1 = setTimeout(() => setBreathPhase('Hold (7s)'), 4000);
-    let step2 = setTimeout(() => setBreathPhase('Exhale (8s)'), 11000);
-    let step3 = setTimeout(() => setBreathPhase('Inhale (4s)'), 19000);
 
-    return () => {
-      clearTimeout(step1);
-      clearTimeout(step2);
-      clearTimeout(step3);
-    };
-  }, [activeCard]);
 
   const renderActiveWidget = () => {
     switch (activeCard) {
       case 'breathing':
-        return (
-          <div className="widget-view">
-            <h2>4-7-8 Breathing Technique</h2>
-            <div className="breath-circle">
-              <span className="breath-phase">{breathPhase}</span>
-            </div>
-            <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Close your eyes if you can. Focus solely on the counting.</p>
-          </div>
-        );
+        return <BreathingGuide isOverlay={false} />;
       case 'task':
         return (
           <div className="widget-view">
