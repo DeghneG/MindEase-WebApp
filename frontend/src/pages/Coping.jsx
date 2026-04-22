@@ -11,6 +11,8 @@ function Coping() {
   const [newTask, setNewTask] = useState('');
   const [noteIndex, setNoteIndex] = useState(0);
   const [walkStatus, setWalkStatus] = useState(null);
+  const [walkTimer, setWalkTimer] = useState(300);
+  const [isWalking, setIsWalking] = useState(false);
 
   const notes = [
     "You are doing the best you can right now, and that is enough.",
@@ -49,12 +51,29 @@ function Coping() {
     setWalkStatus(messages[Math.floor(Math.random() * messages.length)]);
   };
 
+  useEffect(() => {
+    let interval;
+    if (isWalking && walkTimer > 0) {
+      interval = setInterval(() => {
+        setWalkTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (walkTimer === 0 && isWalking) {
+      handleWalkComplete();
+      setIsWalking(false);
+    }
+    return () => clearInterval(interval);
+  }, [isWalking, walkTimer]);
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const renderActiveWidget = () => {
     switch (activeCard) {
       case 'breathing':
-        return <BreathingGuide isOverlay={false} />;
+        return <BreathingGuide isOverlay={false} onClose={() => setActiveCard(null)} />;
       case 'task':
         return (
           <div className="widget-view">
@@ -93,12 +112,22 @@ function Coping() {
                  <div style={{ margin: '2rem 0', padding: '1.5rem', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderRadius: '1rem', borderLeft: '4px solid var(--accent-color)' }}>
                    <p style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{walkStatus}</p>
                  </div>
-                 <button className="option-btn" onClick={() => setWalkStatus(null)}>Start Another Walk Check-in</button>
+                 <button className="option-btn" onClick={() => { setWalkStatus(null); setWalkTimer(300); }}>Start Another Walk Check-in</button>
                </>
+             ) : isWalking ? (
+               <div style={{ textAlign: 'center' }}>
+                 <div style={{ fontSize: '4rem', fontWeight: '700', color: 'var(--accent-color)', margin: '2rem 0' }}>
+                   {formatTime(walkTimer)}
+                 </div>
+                 <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Focus on your surroundings. The timer will log your completion automatically.</p>
+                 <button className="option-btn" onClick={() => setIsWalking(false)}>Pause Walk</button>
+               </div>
              ) : (
                <>
                  <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Leave your phone if safely possible. Pay attention to 5 things you can see, 4 you can touch, 3 you can hear on your walk.</p>
-                 <button className="start-btn" style={{ display: 'inline-flex' }} onClick={handleWalkComplete}>Log Walk Complete</button>
+                 <button className="start-btn" style={{ display: 'inline-flex' }} onClick={() => setIsWalking(true)}>
+                   {walkTimer < 300 ? 'Resume Walk' : 'Start 5-Minute Walk'}
+                 </button>
                </>
              )}
           </div>

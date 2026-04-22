@@ -5,13 +5,20 @@ function BreathingGuide({ onClose, isOverlay = true }) {
   const [breathPhase, setBreathPhase] = useState('Inhale (4s)');
 
   useEffect(() => {
-    let step1, step2, step3;
+    let step1, step2, step3, autoClose;
     
     const runCycle = () => {
       setBreathPhase('Inhale (4s)');
       step1 = setTimeout(() => setBreathPhase('Hold (7s)'), 4000);
       step2 = setTimeout(() => setBreathPhase('Exhale (8s)'), 11000);
-      step3 = setTimeout(runCycle, 19000);
+      
+      if (onClose) {
+        autoClose = setTimeout(() => {
+          onClose();
+        }, 19000);
+      } else {
+        step3 = setTimeout(runCycle, 19000);
+      }
     };
 
     runCycle();
@@ -20,8 +27,9 @@ function BreathingGuide({ onClose, isOverlay = true }) {
       clearTimeout(step1);
       clearTimeout(step2);
       clearTimeout(step3);
+      clearTimeout(autoClose);
     };
-  }, []);
+  }, [onClose]);
 
   const content = (
     <div className="widget-view">
