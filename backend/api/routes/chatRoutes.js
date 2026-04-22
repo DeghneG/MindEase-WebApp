@@ -85,27 +85,54 @@ router.post('/', async (req, res) => {
       : [];
 
     const instance = getGenAI();
-    const model = instance.getGenerativeModel({
-      model: 'gemini-2.5-flash', // Switching to 2.5-flash to bypass the quota exhausted on 2.0-flash
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 600,
-        responseMimeType: 'application/json',
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-      ],
-    });
+    
+    // Expanded fallback strategy
+    const fallbackModels = [
+      'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-pro',       // Added standard pro
+      'gemini-1.5-flash', // Try this as well
+      'gemini-2.0-flash-lite-preview-02-05'
+    ];
 
-    const chat = model.startChat({ history: cleanHistory });
-    const result = await chat.sendMessage(message);
-    const rawText = result.response.text();
+    let rawText = null;
+    let lastErrorMessage = "";
+
+    for (const modelName of fallbackModels) {
+      try {
+        console.log(`[Chat] Attempting with model: ${modelName}`);
+        const model = instance.getGenerativeModel({
+          model: modelName,
+          systemInstruction: SYSTEM_PROMPT,
+        });
+
+        const chat = model.startChat({ 
+          history: cleanHistory,
+          generationConfig: {
+            temperature: 0.9,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 800,
+            responseMimeType: 'application/json',
+          }
+        });
+
+        const result = await chat.sendMessage(message);
+        rawText = result.response.text();
+        
+        if (rawText) {
+          console.log(`[Chat] Success with model: ${modelName}`);
+          break; 
+        }
+      } catch (err) {
+        console.error(`[Chat] Model ${modelName} failed:`, err.message);
+        lastErrorMessage = err.message;
+      }
+    }
+
+    if (!rawText) {
+      throw new Error(`All models failed. Last error: ${lastErrorMessage}`);
+    }
 
     // Parse Gemini's JSON response
     let parsed;
@@ -113,26 +140,26 @@ router.post('/', async (req, res) => {
       const cleaned = rawText.replace(/```json\s*|\s*```/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch (parseError) {
-      console.warn('Failed to parse Gemini JSON, using fallback. Raw:', rawText);
+      console.warn('[Chat] JSON Parse failed, raw text:', rawText);
       parsed = {
-        reply: rawText || "Sorry, I got a bit tangled. Can you say that again?",
-        options: ['Tell me more', 'Change topic', "I'm okay now", 'Try a breathing exercise'],
+        reply: rawText || "I'm here for you. Can you tell me more?",
+        options: ['Tell me more', 'Start over', 'Need help'],
         action: null,
       };
     }
 
     const finalResponse = {
-      reply: parsed.reply || "I'm here. What's on your mind?",
+      reply: parsed.reply || "Nandito lang ako. Ano ang nasa isip mo?",
       options: Array.isArray(parsed.options) && parsed.options.length > 0
         ? parsed.options.slice(0, 4)
-        : ['Tell me more', 'Change topic', "I'm okay", 'Need a break'],
+        : ['Tell me more', 'I feel okay', 'Need advice', 'Tell me a joke'],
       action: parsed.action === 'show_breathing' ? 'show_breathing' : null,
     };
 
     res.json(finalResponse);
   } catch (error) {
-    console.error('Chat route error:', error.message);
-    res.status(200).json({ // Return 200 so the frontend renders this graceful fallback instead of crashing
+    console.error('[Chat] POST /api/chat final error:', error.message);
+    res.status(200).json({ 
       reply: "Sorry, nag-lag ako for a sec. Pwede mo ba ulitin?",
       options: ['Try again', 'Start over', 'Tell me a joke'],
       action: null,
