@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { User } from 'lucide-react';
+import ProfileModal from './ProfileModal';
 
 function Header() {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   return (
     <header className="header">
       <NavLink to="/" className="header-logo">
@@ -30,9 +33,14 @@ function Header() {
         </NavLink>
       </nav>
 
-      <div className="profile-icon">
+      <div className="profile-icon" onClick={() => setIsProfileOpen(true)}>
         <User size={16} color="var(--text-secondary)" />
       </div>
+
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+      />
     </header>
   );
 }
