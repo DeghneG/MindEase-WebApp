@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, MessageSquare, Building2, BookHeart, Users, Link2, Calendar, ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Phone, MessageSquare, Building2, BookHeart, Users, Link2, Calendar, ArrowLeft, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 const EXTERNAL_DIRECTORIES = [
   { name: "NowServing (by SeriousMD)", type: "Medical Directory App", location: "Searchable by \"Iloilo City\"", link: "https://nowserving.ph" },
@@ -27,24 +27,91 @@ const PEER_GROUPS = {
 };
 
 const SELF_CARE_GUIDES = [
-  { id: 'grounding', title: "Grounding Techniques", desc: "5-4-3-2-1 method to bring yourself back to the present moment.", icon: <ShieldCheck size={20} /> },
-  { id: 'sleep', title: "Sleep Hygiene Basics", desc: "Create the perfect environment for restorative rest.", icon: <Building2 size={20} /> },
-  { id: 'anxiety', title: "Exam Anxiety Prep", desc: "Mental strategies to conquer test-day nerves.", icon: <BookHeart size={20} /> }
+  { 
+    id: 'grounding', 
+    title: "Grounding Techniques", 
+    desc: "5-4-3-2-1 method to bring yourself back to the present moment.", 
+    icon: <ShieldCheck size={20} />,
+    steps: [
+      { t: "Look around you.", d: "Identify 5 things you can see." },
+      { t: "Feel your environment.", d: "Identify 4 things you can touch." },
+      { t: "Listen quietly.", d: "Identify 3 things you can hear." },
+      { t: "Shift your awareness.", d: "Identify 2 things you can smell." },
+      { t: "Savor a memory or sense.", d: "Identify 1 thing you can taste." }
+    ]
+  },
+  { 
+    id: 'sleep', 
+    title: "Sleep Hygiene Basics", 
+    desc: "Create the perfect environment for restorative rest.", 
+    icon: <Building2 size={20} />,
+    steps: [
+      { t: "Consistency is key.", d: "Go to bed and wake up at the same time every day." },
+      { t: "Disconnect early.", d: "No screens (phones/laptops) 1 hour before sleep." },
+      { t: "Keep it cool.", d: "Maintain a cool, dark, and quiet bedroom environment." },
+      { t: "Watch the clock.", d: "Avoid caffeine and heavy meals 4-6 hours before bed." }
+    ]
+  },
+  { 
+    id: 'anxiety', 
+    title: "Exam Anxiety Prep", 
+    desc: "Mental strategies to conquer test-day nerves.", 
+    icon: <BookHeart size={20} />,
+    steps: [
+      { t: "Master your breath.", d: "Use Box Breathing: Inhale 4s, Hold 4s, Exhale 4s, Hold 4s." },
+      { t: "Prepare systematically.", d: "Use spaced repetition instead of cramming." },
+      { t: "Positive visualization.", d: "Take a moment to imagine yourself answering calmly." },
+      { t: "Timing strategy.", d: "Arrive 10 minutes early to avoid physical rushing signals." }
+    ]
+  }
 ];
 
 function Resources() {
   const [activeView, setActiveView] = useState('main');
+  const [selectedGuide, setSelectedGuide] = useState(null);
   const [bookingStatus, setBookingStatus] = useState(null);
 
   const handleScheduleAction = () => {
-    setBookingStatus('Connecting to University Health Portal...');
+    setBookingStatus('Opening University Health Portal...');
     setTimeout(() => {
-      setBookingStatus('Success! A portal window would open here in the production version.');
-      setTimeout(() => setBookingStatus(null), 3000);
-    }, 1500);
+      window.open('https://usa.edu.ph/about/services/gstc/', '_blank');
+      setBookingStatus(null);
+    }, 1000);
   };
 
   const renderView = () => {
+    if (selectedGuide) {
+      return (
+        <div className="resource-detail-view">
+          <button className="card-action" onClick={() => setSelectedGuide(null)} style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+            <ArrowLeft size={16} /> Back to Library
+          </button>
+          <div className="section-header">
+            <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {selectedGuide.icon}
+              {selectedGuide.title}
+            </h1>
+            <p>{selectedGuide.desc}</p>
+          </div>
+
+          <div className="guide-steps" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             {selectedGuide.steps.map((step, i) => (
+                <div key={i} className="card" style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                   <div className="card-icon" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-color)' }}>
+                      <CheckCircle2 size={20} />
+                   </div>
+                   <div>
+                      <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--text-primary)' }}>{step.t}</h4>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{step.d}</p>
+                   </div>
+                </div>
+             ))}
+          </div>
+          <button className="start-btn" style={{ marginTop: '2.5rem' }} onClick={() => setSelectedGuide(null)}>I've Completed These Steps</button>
+        </div>
+      );
+    }
+
     switch (activeView) {
       case 'directories':
         return (
@@ -144,7 +211,7 @@ function Resources() {
                   <div className="card-icon">{guide.icon}</div>
                   <h3 className="card-title">{guide.title}</h3>
                   <p className="card-desc">{guide.desc}</p>
-                  <button className="btn-secondary" onClick={() => alert(`Opening ${guide.title} guide...`)}>Read Guide</button>
+                  <button className="btn-secondary" onClick={() => setSelectedGuide(guide)}>Read Guide</button>
                 </div>
               ))}
             </div>
