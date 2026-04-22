@@ -567,3 +567,112 @@ body {
   58% { transform: scale(1.2); } /* Hold 7s */
   100% { transform: scale(0.8); } /* Exhale 8s */
 }
+
+/* Resource Detail Views */
+.resource-detail-view {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+}
+
+.resource-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.resource-table th, .resource-table td {
+  padding: 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.resource-table th {
+  background-color: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.res-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.res-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.res-link:hover {
+  opacity: 0.8;
+}
+
+.peer-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.peer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.peer-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.peer-card:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.peer-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.peer-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--accent-color);
+  border-radius: 2rem;
+  width: fit-content;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
