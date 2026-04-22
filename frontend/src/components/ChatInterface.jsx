@@ -9,7 +9,15 @@ function ChatInterface() {
     {
       text: "I can tell you're feeling a bit overwhelmed today. Would you like to talk about what's on your mind?",
       sender: 'bot',
-      options: ["Yes, let's talk about exams", "I just need a breathing exercise"]
+      options: [
+        "Yes, let's talk about exams", 
+        "I just need a breathing exercise",
+        "Tell me a joke! 😂",
+        "Help me organize my day",
+        "I'm feeling really tired",
+        "I have a general question",
+        "Just want to vent"
+      ]
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
