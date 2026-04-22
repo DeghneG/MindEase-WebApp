@@ -4,7 +4,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const router = express.Router();
 
 // Initialize genAI lazily to ensure environment variables are loaded
-// Note: Using updated Gemini API key provided on 2026-04-22
+// Note: Using newest Gemini API key updated on 2026-04-22 (v2)
 let genAI;
 const getGenAI = () => {
   if (!genAI) {
