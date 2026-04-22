@@ -16,7 +16,13 @@ function ChatInterface() {
         "Help me organize my day",
         "I'm feeling really tired",
         "I have a general question",
-        "Just want to vent"
+        "Just want to vent",
+        "How do I deal with loneliness?",
+        "I need some study tips",
+        "I'm procrastinating... help!",
+        "Show me self-care tips",
+        "I need some motivation",
+        "Can we just chat?"
       ]
     },
   ]);
